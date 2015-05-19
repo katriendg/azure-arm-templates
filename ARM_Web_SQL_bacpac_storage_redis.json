@@ -90,12 +90,6 @@
         "blobStorageName": {
             "type": "string"
         },
-        "repoUri": {
-            "type": "string"
-        },
-        "repoBranch": {
-            "type": "string"
-        },
         "bacpacLocationUri": {
             "type": "string"
         },
