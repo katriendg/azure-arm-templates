@@ -1,0 +1,33 @@
+﻿{
+    "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "siteName": {
+            "value": "mysiteTOCHANGE"
+        },
+        "webSiteHostingPlanName": {
+            "value": "myHP-TOCHANGE"
+        },
+        "webSiteLocation": {
+            "value": "West Europe"
+        },
+        "sqlServerName": {
+            "value": "sqlTOCHANGE"
+        },
+        "sqlServerLocation": {
+            "value": "West Europe"
+        },
+        "sqlServerAdminLogin": {
+            "value": "userTOCHANGE"
+        },
+        "sqlDbName": {
+            "value": "dbTOCHANGE"
+        },
+        "webSiteHostingPlanWorkerSize": {
+            "value": "1"
+        },
+        "blobStorageName": { 
+            "value" : "stTOCHANGE"
+        }
+    }
+}
