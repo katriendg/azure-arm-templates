@@ -1,0 +1,236 @@
+﻿{
+    "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "siteName": {
+            "type": "string"
+        },
+        "webSiteHostingPlanName": {
+            "type": "string"
+        },
+        "webSiteLocation": {
+            "type": "string"
+        },
+        "webSiteHostingPlanSKU": {
+            "type": "string",
+            "allowedValues": [
+                "Free",
+                "Shared",
+                "Basic",
+                "Standard"
+            ],
+            "defaultValue": "Standard"
+        },
+        "webSiteHostingPlanWorkerSize": {
+            "type": "string",
+            "allowedValues": [
+                "0",
+                "1",
+                "2"
+            ],
+            "defaultValue": "0"
+        },
+        "sqlServerName": {
+            "type": "string"
+        },
+        "sqlServerLocation": {
+            "type": "string"
+        },
+        "sqlServerAdminLogin": {
+            "type": "string"
+        },
+        "sqlServerAdminPassword": {
+            "type": "securestring"
+        },
+        "sqlDbName": {
+            "type": "string"
+        },
+        "sqlDbCollation": {
+            "type": "string",
+            "defaultValue": "SQL_Latin1_General_CP1_CI_AS"
+        },
+        "sqlDbEdition": {
+            "type": "string",
+            "defaultValue": "Standard"
+        },
+        "sqlDbMaxSizeBytes": {
+            "type": "string",
+            "defaultValue": "268435456000"
+        },
+        "sqlDbServiceObjectiveId": {
+            "type": "string",
+            "defaultValue": "455330e1-00cd-488b-b5fa-177c226f28b7"
+        },
+        "blobStorageName": {
+            "type": "string"
+        },
+        "storageKeyType": {
+            "type": "string"
+        },
+        "storageKey": {
+            "type": "securestring"
+        },
+        "bacpacStorageUri": {
+            "type": "string"
+        },
+        "msdeployPackageUri": {
+            "type": "string"
+        }
+    },
+    "variables": {
+        "storageType": "Standard-LRS"
+    },
+    "resources": [
+        {
+            "apiVersion": "2014-04-01-preview",
+            "name": "[parameters('sqlServerName')]",
+            "type": "Microsoft.Sql/servers",
+            "location": "[parameters('sqlServerLocation')]",
+            "tags": {
+                "displayName": "SQLServer"
+            },
+            "properties": {
+                "administratorLogin": "[parameters('sqlServerAdminLogin')]",
+                "administratorLoginPassword": "[parameters('sqlServerAdminPassword')]"
+            },
+            "resources": [
+                {
+                    "apiVersion": "2014-04-01-preview",
+                    "name": "[parameters('sqlDbName')]",
+                    "type": "databases",
+                    "location": "[parameters('sqlServerLocation')]",
+                    "tags": {
+                        "displayName": "SQLDatabase"
+                    },
+                    "dependsOn": [
+                        "[concat('Microsoft.Sql/servers/', parameters('sqlServerName'))]"
+                    ],
+                    "properties": {
+                        "edition": "[parameters('sqlDbEdition')]",
+                        "collation": "[parameters('sqlDbCollation')]",
+                        "maxSizeBytes": "[parameters('sqlDbMaxSizeBytes')]",
+                        "requestedServiceObjectiveId": "[parameters('sqlDbServiceObjectiveId')]"
+                    },
+                    "resources": [
+                        {
+                            "name": "Import",
+                            "type": "extensions",
+                            "apiVersion": "2014-04-01-preview",
+                            "dependsOn": [
+                                "[concat('Microsoft.Sql/servers/', parameters('sqlServerName'), '/databases/', parameters('sqlDbName'))]"
+                            ],
+                            "properties": {
+                                "storageKeyType": "[parameters('storageKeyType')]",
+                                "storageKey": "[parameters('storageKey')]",
+                                "storageUri": "[parameters('bacpacStorageUri')]",
+                                "administratorLogin": "[parameters('sqlServerAdminLogin')]",
+                                "administratorLoginPassword": "[parameters('sqlServerAdminPassword')]",
+                                "operationMode": "Import"
+                            }
+
+                        }
+                    ]
+                },
+                {
+                    "apiVersion": "2014-04-01-preview",
+                    "name": "SQLServerFirewallRules",
+                    "type": "firewallrules",
+                    "location": "[parameters('sqlServerLocation')]",
+                    "dependsOn": [
+                        "[concat('Microsoft.Sql/servers/', parameters('sqlServerName'))]"
+                    ],
+                    "properties": {
+                        "endIpAddress": "0.0.0.0",
+                        "startIpAddress": "0.0.0.0"
+                    }
+                }
+            ]
+        },
+        {
+            "apiVersion": "2015-05-01-preview",
+            "name": "[parameters('blobStorageName')]",
+            "type": "Microsoft.Storage/storageAccounts",
+            "location": "[parameters('webSiteLocation')]",
+            "properties": {
+                "accountType": "[variables('storageType')]"
+            }
+        },
+        {
+            "apiVersion": "2014-06-01",
+            "name": "[parameters('siteName')]",
+            "type": "Microsoft.Web/sites",
+            "location": "[parameters('webSiteLocation')]",
+            "tags": {
+                "[concat('hidden-related:', resourceGroup().id, '/providers/Microsoft.Web/serverfarms/', parameters('webSiteHostingPlanName'))]": "Resource",
+                "displayName": "Website"
+            },
+            "dependsOn": [
+                "[concat('Microsoft.Web/serverfarms/', parameters('webSiteHostingPlanName'))]"
+            ],
+            "properties": {
+                "name": "[parameters('siteName')]",
+                "serverFarm": "[parameters('webSiteHostingPlanName')]"
+            },
+            "resources": [
+                {
+                    "apiVersion": "2014-06-01",
+                    "type": "config",
+                    "name": "web",
+                    "dependsOn": [
+                        "[concat('Microsoft.Web/Sites/', parameters('siteName'))]"
+                    ],
+                    "properties": {
+                        "netFrameworkVersion": "v4.5",
+                        "phpVersion": "", /* empty string to disable PHP */
+                        "use32BitWorkerProcess": false, /* 64-bit platform */
+                        "requestTracingEnabled": true, /* Failed request tracing, aka 'freb' */
+                        "httpLoggingEnabled": true /* IIS logs (aka Web server logging) */
+
+                    }
+                },
+                {
+                    "apiVersion": "2014-11-01",
+                    "name": "connectionstrings",
+                    "type": "config",
+                    "dependsOn": [
+                        "[resourceId('Microsoft.Web/Sites', parameters('siteName'))]"
+                    ],
+                    "properties": {
+                        "DB": { "value": "[concat('Data Source=tcp:', reference(concat('Microsoft.Sql/servers/', parameters('sqlServerName'))).fullyQualifiedDomainName, ',1433;Initial Catalog=', parameters('sqlDbName'), ';User Id=', parameters('sqlServerAdminLogin'), '@', parameters('sqlServerName'), ';Password=', parameters('sqlServerAdminPassword'), ';MultipleActiveResultSets=True;')]", "type": "SQLAzure" },
+                        "AzureBlobs": { "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', parameters('blobStorageName'), ';AccountKey=', listKeys(resourceId('Microsoft.Storage/storageAccounts', parameters('blobStorageName')), '2015-05-01-preview').key1, ';')]", "type": "Custom" }
+                    }
+                },
+                {
+                    "name": "MSDeploy",
+                    "type": "Extensions",
+                    "apiVersion": "2014-01-01",
+                    "dependsOn": [ "[resourceId('Microsoft.Web/Sites', parameters('siteName'))]" ],
+                    "properties": {
+                        "packageUri": "[parameters('msdeployPackageUri')]",
+                        "dbType": "None",
+                        "connectionString": "",
+                        "setParameters": {
+                            "IIS Web Application Name": "[parameters('siteName')]"
+                        }
+                    }
+                }
+            ]
+        },
+
+        {
+            "apiVersion": "2014-06-01",
+            "name": "[parameters('webSiteHostingPlanName')]",
+            "type": "Microsoft.Web/serverfarms",
+            "location": "[parameters('webSiteLocation')]",
+            "tags": {
+                "displayName": "WebSiteHostingPlan"
+            },
+            "properties": {
+                "name": "[parameters('webSiteHostingPlanName')]",
+                "sku": "[parameters('webSiteHostingPlanSKU')]",
+                "workerSize": "[parameters('webSiteHostingPlanWorkerSize')]",
+                "numberOfWorkers": 1
+            }
+        }
+    ]
+}
