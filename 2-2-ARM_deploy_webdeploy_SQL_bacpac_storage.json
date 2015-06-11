@@ -3,13 +3,22 @@
     "contentVersion": "1.0.0.0",
     "parameters": {
         "siteName": {
-            "type": "string"
+            "type": "string",
+            "metadata": {
+                "description": "Name of the web app"
+            }
         },
         "webSiteHostingPlanName": {
-            "type": "string"
+            "type": "string",
+            "metadata": {
+                "description": "App Service hosting plan name"
+            }
         },
         "webSiteLocation": {
-            "type": "string"
+            "type": "string",
+            "metadata": {
+                "description": "Location for the resources"
+            }
         },
         "webSiteHostingPlanSKU": {
             "type": "string",
@@ -19,7 +28,10 @@
                 "Basic",
                 "Standard"
             ],
-            "defaultValue": "Standard"
+            "defaultValue": "Standard",
+            "metadata": {
+                "description": "App Service SKU"
+            }
         },
         "webSiteHostingPlanWorkerSize": {
             "type": "string",
@@ -31,19 +43,31 @@
             "defaultValue": "0"
         },
         "sqlServerName": {
-            "type": "string"
+            "type": "string",
+            "metadata": {
+                "description": "SQL Server name"
+            }
         },
         "sqlServerLocation": {
-            "type": "string"
+            "type": "string",
+            "metadata": {
+                "description": "Location for SQL Server"
+            }
         },
         "sqlServerAdminLogin": {
-            "type": "string"
+            "type": "string",
+            "metadata": {
+                "description": "Admin user"
+            }
         },
         "sqlServerAdminPassword": {
             "type": "securestring"
         },
         "sqlDbName": {
-            "type": "string"
+            "type": "string",
+            "metadata": {
+                "description": "SQL Database name"
+            }
         },
         "sqlDbCollation": {
             "type": "string",
@@ -65,16 +89,32 @@
             "type": "string"
         },
         "storageKeyType": {
-            "type": "string"
+            "type": "string",
+            "allowedValues": [
+                "Primary",
+                "Secondary"
+            ],
+            "metadata": {
+                "description": "Storage key type (for bacpac)"
+            }
         },
         "storageKey": {
-            "type": "securestring"
+            "type": "securestring",
+            "metadata": {
+                "description": "Storage key (bacpac URI)"
+            }
         },
         "bacpacStorageUri": {
-            "type": "string"
+            "type": "string",
+            "metadata": {
+                "description": "Storage URI for Bacpac"
+            }
         },
         "msdeployPackageUri": {
-            "type": "string"
+            "type": "string",
+            "metadata": {
+                "description": "Public URI of ms deploy package"
+            }
         }
     },
     "variables": {
