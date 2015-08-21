@@ -177,14 +177,15 @@
                     "type": "config",
                     "name": "web",
                     "dependsOn": [
-                        "[concat('Microsoft.Web/Sites/', parameters('siteName'))]"
+                        "[concat('Microsoft.Web/Sites/', parameters('siteName'))]",
+                        "[concat('Microsoft.Web/Sites/', parameters('siteName'), '/Extensions/MSDeploy')]"
                     ],
                     "properties": {
                         "netFrameworkVersion": "v4.5",
-                        "phpVersion": "", /* empty string to disable PHP */
-                        "use32BitWorkerProcess": false, /* 64-bit platform */
-                        "requestTracingEnabled": true, /* Failed request tracing, aka 'freb' */
-                        "httpLoggingEnabled": true /* IIS logs (aka Web server logging) */
+                        "phpVersion": "", 
+                        "use32BitWorkerProcess": false, 
+                        "requestTracingEnabled": true, 
+                        "httpLoggingEnabled": true 
 
                     }
                 },
@@ -193,7 +194,8 @@
                     "name": "connectionstrings",
                     "type": "config",
                     "dependsOn": [
-                        "[resourceId('Microsoft.Web/Sites', parameters('siteName'))]"
+                        "[resourceId('Microsoft.Web/Sites', parameters('siteName'))]",
+                        "[concat('Microsoft.Web/Sites/', parameters('siteName'), '/Extensions/MSDeploy')]"
                     ],
                     "properties": {
                         "DB": { "value": "[concat('Data Source=tcp:', reference(concat('Microsoft.Sql/servers/', parameters('sqlServerName'))).fullyQualifiedDomainName, ',1433;Initial Catalog=', parameters('sqlDbName'), ';User Id=', parameters('sqlServerAdminLogin'), '@', parameters('sqlServerName'), ';Password=', parameters('sqlServerAdminPassword'), ';MultipleActiveResultSets=True;')]", "type": "SQLAzure" },
